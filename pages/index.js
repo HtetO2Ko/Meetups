@@ -25,24 +25,24 @@ function HomePage(props) {
   );
 }
 
-// export async function getStaticProps() {
-//   return {
-//     props: {
-//       meetups: DUMMRY_MEETUPS,
-//     },
-//     revalidate: 1
-//   }
-// }
-
-export async function getServerSideProps(context) {
-  const req = context.req;
-  const res = context.res;
-
+export async function getStaticProps() {
   return {
     props: {
       meetups: DUMMRY_MEETUPS,
     },
+    revalidate: 1
   }
 }
+
+// export async function getServerSideProps(context) {
+//   const req = context.req;
+//   const res = context.res;
+
+//   return {
+//     props: {
+//       meetups: DUMMRY_MEETUPS,
+//     },
+//   }
+// }
 
 export default HomePage;
