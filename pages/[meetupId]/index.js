@@ -1,3 +1,4 @@
+import { MongoClient, ObjectId } from "mongodb";
 import MeetupDetail from "../../components/meetups/MeetupDetail";
 
 function MeetupDetails(props) {
@@ -13,36 +14,43 @@ function MeetupDetails(props) {
 }
 
 export async function getStaticPaths() {
+  const client = await MongoClient.connect(process.env.MONGODB_URL)
+  const db = client.db();
+
+  const meetupsCollection = db.collection('meetups');
+  const meetups = await meetupsCollection.find({}, { _id: 1 }).toArray();
+
+  client.close();
   return {
     fallback: false,
-    paths: [
-      {
-        params: {
-          meetupId: 'M1',
-        },
-      },
-      {
-        params: {
-          meetupId: 'M2',
-        }
-      }
-    ]
+    paths: meetups.map(meetup => ({
+      params: { meetupId: meetup._id.toString() }
+    })),
   }
 }
 
 export async function getStaticProps(context) {
   // fetch data for a single meetup
-
   const meetupId = context.params.meetupId;
+  const client = await MongoClient.connect(process.env.MONGODB_URL)
+  const db = client.db();
+
+  const meetupsCollection = db.collection('meetups');
+  const selectedMeetup = await meetupsCollection.findOne({
+    _id: new ObjectId(meetupId)
+  });
+
+  client.close();
+
   return {
     props: {
       meetupData: {
-        id: meetupId,
-        image: 'https://media.cntraveler.com/photos/58de89946c3567139f9b6cca/16:9/w_2560%2Cc_limit/GettyImages-468366251.jpg',
-        title: 'A First Meetup',
-        address: 'Eiffel Tower - Paris, France',
-        description: 'This is a first meetup'
-      }
+        id: selectedMeetup._id.toString(),
+        title: selectedMeetup.title,
+        image: selectedMeetup.image,
+        address: selectedMeetup.address,
+        description: selectedMeetup.description,
+      },
     }
   }
 }
